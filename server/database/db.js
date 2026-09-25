@@ -1,7 +1,15 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = path.resolve(__dirname, '../plm_predictor.db');
+// In Vercel serverless environments, the filesystem is read-only except /tmp
+let dbPath;
+if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  dbPath = '/tmp/plm_predictor.db';
+} else {
+  dbPath = path.resolve(__dirname, '../plm_predictor.db');
+}
+
 const db = new sqlite3.Database(dbPath);
 
 // Enable foreign keys

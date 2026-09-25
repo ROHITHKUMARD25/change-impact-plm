@@ -33,7 +33,8 @@ export default function AuthPage() {
     try {
       await login(loginEmail, loginPassword);
     } catch (err) {
-      const msg = err.response?.data?.error || 'Invalid credentials. Please check your email and password.';
+      const raw = err.response?.data?.error;
+      const msg = typeof raw === 'string' ? raw : (raw?.message || err.message || 'Invalid credentials. Please check your email and password.');
       setError(msg);
     } finally {
       setLoading(false);
@@ -61,7 +62,8 @@ export default function AuthPage() {
         confirm_password: confirmPassword
       });
     } catch (err) {
-      const msg = err.response?.data?.error || 'Sign up failed. Email already registered or invalid inputs.';
+      const raw = err.response?.data?.error;
+      const msg = typeof raw === 'string' ? raw : (raw?.message || err.message || 'Sign up failed. Email already registered or invalid inputs.');
       setError(msg);
     } finally {
       setLoading(false);
@@ -76,7 +78,9 @@ export default function AuthPage() {
     try {
       await login(email, 'Password123!');
     } catch (err) {
-      setError('Failed to login with demo account.');
+      const raw = err.response?.data?.error;
+      const msg = typeof raw === 'string' ? raw : (raw?.message || err.message || 'Failed to login with demo account.');
+      setError(msg);
     } finally {
       setLoading(false);
     }

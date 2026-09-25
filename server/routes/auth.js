@@ -106,7 +106,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     console.error('Login error:', err);
-    return res.status(500).json({ error: 'Server error during login. Please try again.' });
+    return res.status(500).json({ error: `Server error during login: ${err.message}` });
   }
 });
 

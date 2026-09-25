@@ -3,6 +3,7 @@ const cors = require('cors');
 const { PORT } = require('./config');
 const { initDatabaseSchema } = require('./database/schema');
 const { seedDatabase } = require('./database/seed');
+const { ensureDbInitialized } = require('./middleware/initDb');
 
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
@@ -22,6 +23,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware ensuring DB initialization on serverless requests
+app.use('/api', ensureDbInitialized);
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -35,22 +39,26 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', app: 'Design Change Impact Predictor (PLM)', timestamp: new Date() });
 });
 
-// Initialize DB and launch server
-async function startServer() {
-  try {
-    await initDatabaseSchema();
-    await seedDatabase();
+// Initialize DB and launch server locally if not serverless
+if (require.main === module) {
+  async function startServer() {
+    try {
+      await initDatabaseSchema();
+      await seedDatabase();
 
-    app.listen(PORT, () => {
-      console.log(`=======================================================`);
-      console.log(`🚀 PLM Impact Predictor Backend running on port ${PORT}`);
-      console.log(`   Health Check: http://localhost:${PORT}/api/health`);
-      console.log(`=======================================================`);
-    });
-  } catch (err) {
-    console.error('Failed to start server:', err);
-    process.exit(1);
+      app.listen(PORT, () => {
+        console.log(`=======================================================`);
+        console.log(`🚀 PLM Impact Predictor Backend running on port ${PORT}`);
+        console.log(`   Health Check: http://localhost:${PORT}/api/health`);
+        console.log(`=======================================================`);
+      });
+    } catch (err) {
+      console.error('Failed to start server:', err);
+      process.exit(1);
+    }
   }
+
+  startServer();
 }
 
-startServer();
+module.exports = app;
